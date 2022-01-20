@@ -1,0 +1,6 @@
+{
+    "java.project.sourcePaths": [
+        "Circles/src",
+        "helloWorld/src/edu/nmsu/helloworld"
+    ]
+}
