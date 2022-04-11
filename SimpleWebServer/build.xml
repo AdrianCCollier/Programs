@@ -1,0 +1,34 @@
+<project name="SimpleWebServer" default="run" basedir=".">
+   
+   <description>Builds ant file for Simple Web Server</description>
+   
+   <!-- Global properties -->
+   <property name="src" location="src" />
+   <property name="bin" location="bin" />
+   
+  
+   <!-- Build Target -->
+   <target name="build" depends="clean">
+      <mkdir dir="${bin}" />
+      <javac srcdir="${src}" destdir="${bin}" />
+   </target>
+
+
+   <!-- Compile Target -->
+   <target name="compile" depends="build">
+      <javac srcdir="${src}" destdir="${bin}" />
+   </target>
+
+
+   <!-- Run Target -->
+   <target name="run" depends="compile">
+      <java classname="edu.nmsu.cs.webserver.WebServer" classpath="${bin}" fork="true" dir="./www/" />
+   </target>
+   
+    <!-- Clean Target -->
+   <target name="clean">
+   	  <delete dir="bin"/>
+   </target>
+   
+   
+</project>
