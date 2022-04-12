@@ -40,7 +40,7 @@ import javax.sound.sampled.Line;
 
 public class WebWorker implements Runnable
 {
-	// used for tag replacement 
+	// used for tag replacement
 	Date currentDate;
     String dateTag;
 	String serverTag;
@@ -66,7 +66,7 @@ public class WebWorker implements Runnable
 	 **/
 	public void run()
 	{
-		
+
 		String fileType = null;
         String htmlPage;
 		System.err.println("Handling connection...");
@@ -78,23 +78,35 @@ public class WebWorker implements Runnable
 			htmlPage = readHTTPRequest(is);
 			// Create new htmlPage File Object and store into file
 			File file = new File(htmlPage);
-            // read and recognize file type as html and write as HTTP header
+            // read and recognize file type accordingly and write as HTTP header
 			if (htmlPage.endsWith("html")) {
 				fileType="html";
 				writeHTTPHeader(os, file, "text/html");
-			} // end if 
+			} // end if
+			else if (htmlPage.endsWith("jpg")) {
+				fileType="jpg";
+				writeHTTPHeader(os, file, "image/jpg");
+			}
+			else if (htmlPage.endsWith("png")) {
+				fileType="png";
+				writeHTTPHeader(os, file, "image/png");
+			}
+			else if (htmlPage.endsWith("gif")) {
+				fileType="gif";
+				writeHTTPHeader(os, file, "image/gif");
+			}
 			    writeContent(os, fileType, file);
 
 		    os.flush();
 		    socket.close();
-		} // end try 
+		} // end try
 		catch (Exception e)
 		{
 			System.err.println("Output error: " + e);
-		} // end catch 
+		} // end catch
 		System.err.println("Done handling connection.");
 		return;
-	} // end run method 
+	} // end run method
 
 	/**
 	 * Read the HTTP request header.
@@ -105,12 +117,12 @@ public class WebWorker implements Runnable
 		String currParse = null;
 		BufferedReader r = new BufferedReader(new InputStreamReader(is));
 		while (true) {
-			
+
 			try {
 				while (!r.ready())
 					Thread.sleep(1);
 				line = r.readLine();
-                // if the GET request refers to an existing filename, deliver content of file as response content back to browser 
+                // if the GET request refers to an existing filename, deliver content of file as response content back to browser
 				if (line.contains("GET")) {
 					currParse = line.substring(5);
 					if (currParse.contains(" "))
@@ -156,14 +168,14 @@ public class WebWorker implements Runnable
 			os.write("Connection: close\n".getBytes());
 			os.write("Content-Type: ".getBytes());
 			os.write(contentType.getBytes());
-			os.write("\n\n".getBytes()); 
+			os.write("\n\n".getBytes());
 			return;
-			} // end if 
+			} // end if
 		// otherwise, output 404 message
 		else
 			os.write("HTTP/1.1 404 Not Found\n".getBytes());
 			return;
-		
+
 	}
 
 	/**
@@ -179,7 +191,7 @@ public class WebWorker implements Runnable
 		DateFormat dateF = DateFormat.getDateTimeInstance();
 		dateF.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-		
+		// if serving an html file type
 		if (fileType == "html") {
 			if (file.exists() && !file.isDirectory()) {
 				BufferedReader input = new BufferedReader(new FileReader(file));
@@ -189,7 +201,7 @@ public class WebWorker implements Runnable
 
 						// tag replace IF's
 						if(readLine.contains(serverTag))
-						   readLine = readLine.replace(serverTag, "Adrian's very OK Server");
+						   readLine = readLine.replace(serverTag, "Adrian's slightly more OK Server");
 
 						if(readLine.contains(dateTag))
 						   readLine = readLine.replace(dateTag, (dateF.format(currentDate)));
@@ -200,18 +212,22 @@ public class WebWorker implements Runnable
 				}
 				catch (FileNotFoundException e) {
 					e.printStackTrace();
-				} // end catch 
+				} // end catch
 			} // end inner if
-		} // end outer if  
+		} // end outer if
 
-		
+		// if serving a jpg, png, or gif
+		else if(fileType == "jpg" || fileType == "png" || fileType == "gif") {
+            byte[] imageToBytes = Files.readAllBytes(file.toPath());
+            os.write(imageToBytes);
+		} // end else if
 
 		// 404 not found
 		else {
 			os.write("<html><head></head><body>\n".getBytes());
 			os.write("<h3>404 Not Found!</h3>\n".getBytes());
 			os.write("</body></html>\n".getBytes());
-		} // end else 
+		} // end else
 
 	} // end writeContent method
 
